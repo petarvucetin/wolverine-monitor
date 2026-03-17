@@ -48,6 +48,15 @@ export async function refreshStats(connectionId: string): Promise<void> {
   stats.set(data);
 }
 
+let refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function debouncedRefreshStats(connectionId: string): void {
+  if (refreshTimeout) clearTimeout(refreshTimeout);
+  refreshTimeout = setTimeout(() => {
+    refreshStats(connectionId);
+  }, 1000);
+}
+
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 let unlistenFn: UnlistenFn | null = null;
 
@@ -63,11 +72,16 @@ export async function startDashboard(connectionId: string): Promise<void> {
   unlistenFn = await onEnvelopeChange((event) => {
     if (event.connection_id === connectionId) {
       addRecentMessage(event);
+      debouncedRefreshStats(connectionId);
     }
   });
 }
 
 export function stopDashboard(): void {
+  if (refreshTimeout !== null) {
+    clearTimeout(refreshTimeout);
+    refreshTimeout = null;
+  }
   if (pollInterval !== null) {
     clearInterval(pollInterval);
     pollInterval = null;
