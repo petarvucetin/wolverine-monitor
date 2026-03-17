@@ -32,8 +32,8 @@ pub fn run() {
             commands::trigger_cmds::install_triggers,
             commands::trigger_cmds::uninstall_triggers,
             // Envelope commands
-            commands::envelope_cmds::get_incoming,
-            commands::envelope_cmds::get_outgoing,
+            commands::envelope_cmds::get_incoming_envelopes,
+            commands::envelope_cmds::get_outgoing_envelopes,
             commands::envelope_cmds::get_message_detail,
             // Dead letter commands
             commands::dead_letter_cmds::get_dead_letters,

@@ -9,7 +9,7 @@ use crate::models::envelope::{EnvelopeFilters, IncomingEnvelope, OutgoingEnvelop
 use crate::queries::envelopes;
 
 #[tauri::command]
-pub async fn get_incoming(
+pub async fn get_incoming_envelopes(
     connection_id: String,
     filters: EnvelopeFilters,
     page: i64,
@@ -23,7 +23,7 @@ pub async fn get_incoming(
 }
 
 #[tauri::command]
-pub async fn get_outgoing(
+pub async fn get_outgoing_envelopes(
     connection_id: String,
     filters: EnvelopeFilters,
     page: i64,
