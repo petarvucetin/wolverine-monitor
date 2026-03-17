@@ -16,6 +16,9 @@ import type {
 } from "./types";
 
 // Connection commands
+export const listConnections = () =>
+  invoke<ConnectionInfo[]>("list_connections");
+
 export const addConnection = (config: Omit<ConnectionConfig, "id">) =>
   invoke<string>("add_connection", { config });
 
