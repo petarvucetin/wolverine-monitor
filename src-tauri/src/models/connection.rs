@@ -20,7 +20,7 @@ pub struct ConnectionConfig {
     pub id: String,
     pub name: String,
     #[serde(default)]
-    pub label: String,
+    pub routes: Vec<String>,
     pub host: String,
     pub port: u16,
     pub database: String,
@@ -65,7 +65,7 @@ pub struct ConnectionInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectionUpdate {
     pub name: Option<String>,
-    pub label: Option<String>,
+    pub routes: Option<Vec<String>>,
     pub host: Option<String>,
     pub port: Option<u16>,
     pub database: Option<String>,

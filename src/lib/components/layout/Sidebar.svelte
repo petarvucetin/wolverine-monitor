@@ -1,6 +1,6 @@
 <script lang="ts">
   import { currentRoute, navigate } from "$lib/stores/router";
-  import { connections, activeConnectionId } from "$lib/stores/connections";
+  import { connections } from "$lib/stores/connections";
   import { getVersion } from "@tauri-apps/api/app";
   import type { Route } from "$lib/types";
 
@@ -15,9 +15,10 @@
     { route: "connections", label: "Connections", icon: "\u26C1" },
   ];
 
-  function handleConnectionChange(e: Event) {
-    const target = e.target as HTMLSelectElement;
-    activeConnectionId.set(target.value || null);
+  function connNameForRoute(route: Route): string | null {
+    if (route === "connections") return null;
+    const match = $connections.find((c) => c.config.routes.includes(route));
+    return match?.config.name ?? null;
   }
 </script>
 
@@ -26,23 +27,9 @@
     Wolverine Monitor
   </div>
 
-  {#if $connections.length > 0}
-    <div class="px-3 pb-3">
-      <select
-        class="w-full px-2 py-1.5 text-sm rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-blue-500"
-        value={$activeConnectionId ?? ""}
-        onchange={handleConnectionChange}
-      >
-        <option value="">Select connection...</option>
-        {#each $connections as conn}
-          <option value={conn.config.id}>{conn.config.name}{conn.config.label ? ` [${conn.config.label}]` : ''}</option>
-        {/each}
-      </select>
-    </div>
-  {/if}
-
   <nav class="flex-1 px-2 space-y-1">
     {#each navItems as item}
+      {@const connName = connNameForRoute(item.route)}
       <button
         class="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors
           {$currentRoute === item.route
@@ -51,7 +38,12 @@
         onclick={() => navigate(item.route)}
       >
         <span class="text-base">{item.icon}</span>
-        {item.label}
+        <span class="flex-1 text-left">{item.label}</span>
+        {#if connName}
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 truncate max-w-20">{connName}</span>
+        {:else if item.route !== "connections"}
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">---</span>
+        {/if}
       </button>
     {/each}
   </nav>

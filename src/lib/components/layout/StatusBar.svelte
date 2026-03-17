@@ -21,7 +21,7 @@
   <div class="flex-1"></div>
 
   {#if $activeConnection}
-    <span>{$activeConnection.config.name}{$activeConnection.config.label ? ` [${$activeConnection.config.label}]` : ''}</span>
+    <span>{$activeConnection.config.name}</span>
     <span class="opacity-50">|</span>
     <span>{$activeConnection.config.schema}</span>
   {/if}

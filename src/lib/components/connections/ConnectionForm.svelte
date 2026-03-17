@@ -1,9 +1,8 @@
 <script lang="ts">
-  import type { SslMode } from "$lib/types";
+  import type { Route, SslMode } from "$lib/types";
   import { createConnection, testConnectionConfig } from "$lib/stores/connections";
 
   let name = $state("");
-  let label = $state("");
   let host = $state("localhost");
   let port = $state(5432);
   let database = $state("");
@@ -14,6 +13,26 @@
   let testing = $state(false);
   let saving = $state(false);
 
+  let selectedRoutes = $state<Record<string, boolean>>({
+    dashboard: false,
+    explorer: false,
+    deadletters: false,
+    nodes: false,
+  });
+
+  const routeLabels: { route: Route; label: string }[] = [
+    { route: "dashboard", label: "Dashboard" },
+    { route: "explorer", label: "Explorer" },
+    { route: "deadletters", label: "Dead Letters" },
+    { route: "nodes", label: "Nodes" },
+  ];
+
+  function getRoutes(): Route[] {
+    return Object.entries(selectedRoutes)
+      .filter(([, v]) => v)
+      .map(([k]) => k as Route);
+  }
+
   async function handleTest() {
     testing = true;
     await testConnectionConfig(host, port, database, username, password, sslMode);
@@ -23,9 +42,9 @@
   async function handleSave() {
     saving = true;
     try {
-      await createConnection({ name, label, host, port, database, schema, username, password, ssl_mode: sslMode });
-      // Reset form
-      name = ""; label = ""; database = ""; username = ""; password = "";
+      await createConnection({ name, routes: getRoutes(), host, port, database, schema, username, password, ssl_mode: sslMode });
+      name = ""; database = ""; username = ""; password = "";
+      selectedRoutes = { dashboard: false, explorer: false, deadletters: false, nodes: false };
     } catch { /* toast already shown */ }
     saving = false;
   }
@@ -39,11 +58,6 @@
     <label class="block">
       <span class="text-xs text-[var(--color-text-secondary)]">Name</span>
       <input bind:value={name} required
-        class="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
-    </label>
-    <label class="block">
-      <span class="text-xs text-[var(--color-text-secondary)]">Label</span>
-      <input bind:value={label} placeholder="e.g. queues, wolverine..."
         class="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
     </label>
     <label class="block">
@@ -86,6 +100,19 @@
         <option value="VerifyCa">Verify CA</option>
       </select>
     </label>
+  </div>
+
+  <div>
+    <span class="text-xs text-[var(--color-text-secondary)]">Use for pages</span>
+    <div class="flex gap-4 mt-1.5">
+      {#each routeLabels as { route, label }}
+        <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+          <input type="checkbox" bind:checked={selectedRoutes[route]}
+            class="rounded border-[var(--color-border)]" />
+          {label}
+        </label>
+      {/each}
+    </div>
   </div>
 
   <div class="flex gap-2">

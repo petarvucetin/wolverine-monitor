@@ -110,8 +110,8 @@ impl ConnectionManager {
         if let Some(name) = updates.name {
             managed.config.name = name;
         }
-        if let Some(label) = updates.label {
-            managed.config.label = label;
+        if let Some(routes) = updates.routes {
+            managed.config.routes = routes;
         }
         if let Some(host) = updates.host {
             managed.config.host = host;

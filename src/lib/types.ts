@@ -54,7 +54,7 @@ export type SslMode = "Disable" | "Prefer" | "Require" | "VerifyCa";
 export interface ConnectionConfig {
   id: string;
   name: string;
-  label: string;
+  routes: Route[];
   host: string;
   port: number;
   database: string;

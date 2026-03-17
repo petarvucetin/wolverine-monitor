@@ -8,22 +8,17 @@
   import DeadLetters from "$lib/views/DeadLetters.svelte";
   import Nodes from "$lib/views/Nodes.svelte";
   import Connections from "$lib/views/Connections.svelte";
-  import { currentRoute } from "$lib/stores/router";
-  import { loadConnections, connections, activeConnectionId } from "$lib/stores/connections";
+  import { currentRoute, navigate } from "$lib/stores/router";
+  import { loadConnections } from "$lib/stores/connections";
   import { onAlert } from "$lib/tauri";
   import { toasts } from "$lib/stores/toasts";
 
   onMount(() => {
-    let unsubscribe: (() => void) | undefined;
     let unlistenAlert: (() => void) | undefined;
 
     loadConnections().then(() => {
-      // Auto-select the first connection if only one exists
-      unsubscribe = connections.subscribe((conns) => {
-        if (conns.length === 1) {
-          activeConnectionId.set(conns[0].config.id);
-        }
-      });
+      // Trigger auto-select for the initial route
+      navigate("dashboard");
     }).catch((e) => {
       toasts.add(`Failed to load connections: ${e}`, "error");
     });
@@ -35,7 +30,6 @@
     }).catch(() => {});
 
     return () => {
-      unsubscribe?.();
       unlistenAlert?.();
     };
   });
