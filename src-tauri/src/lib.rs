@@ -1,3 +1,4 @@
+mod alerts;
 mod commands;
 mod config;
 mod connections;
@@ -7,6 +8,7 @@ mod monitor;
 mod queries;
 mod triggers;
 
+use alerts::engine::AlertEngine;
 use connections::manager::ConnectionManager;
 use monitor::listener::NotifyListener;
 
@@ -18,6 +20,7 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::default().build())
         .manage(ConnectionManager::new())
         .manage(NotifyListener::new())
+        .manage(AlertEngine::new())
         .invoke_handler(tauri::generate_handler![
             // Connection commands
             commands::connection_cmds::add_connection,
