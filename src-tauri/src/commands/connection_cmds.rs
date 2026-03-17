@@ -2,7 +2,7 @@ use tauri::State;
 
 use crate::connections::manager::ConnectionManager;
 use crate::error::AppError;
-use crate::models::connection::{ConnectionConfig, ConnectionInfo, SslMode};
+use crate::models::connection::{ConnectionConfig, ConnectionInfo, ConnectionUpdate, SslMode};
 use crate::monitor::listener::NotifyListener;
 
 #[tauri::command]
@@ -26,6 +26,15 @@ pub async fn remove_connection(
     manager: State<'_, ConnectionManager>,
 ) -> Result<(), AppError> {
     manager.remove(&connection_id).await
+}
+
+#[tauri::command]
+pub async fn update_connection(
+    connection_id: String,
+    updates: ConnectionUpdate,
+    manager: State<'_, ConnectionManager>,
+) -> Result<(), AppError> {
+    manager.update(&connection_id, updates).await
 }
 
 #[tauri::command]

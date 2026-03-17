@@ -24,6 +24,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             // Connection commands
             commands::connection_cmds::add_connection,
+            commands::connection_cmds::update_connection,
             commands::connection_cmds::remove_connection,
             commands::connection_cmds::test_connection,
             commands::connection_cmds::list_connections,
@@ -33,6 +34,7 @@ pub fn run() {
             // Envelope commands
             commands::envelope_cmds::get_incoming,
             commands::envelope_cmds::get_outgoing,
+            commands::envelope_cmds::get_message_detail,
             // Dead letter commands
             commands::dead_letter_cmds::get_dead_letters,
             commands::dead_letter_cmds::replay_dead_letter,

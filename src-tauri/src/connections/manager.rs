@@ -6,7 +6,7 @@ use tokio_postgres::NoTls;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::models::connection::{ConnectionConfig, ConnectionStatus, ConnectionInfo, SslMode};
+use crate::models::connection::{ConnectionConfig, ConnectionStatus, ConnectionInfo, ConnectionUpdate, SslMode};
 
 pub struct ManagedConnection {
     pub config: ConnectionConfig,
@@ -58,6 +58,60 @@ impl ConnectionManager {
             .await
             .remove(connection_id)
             .ok_or_else(|| AppError::ConnectionNotFound(connection_id.to_string()))?;
+        Ok(())
+    }
+
+    pub async fn update(&self, connection_id: &str, updates: ConnectionUpdate) -> Result<(), AppError> {
+        // Validate new schema name if provided
+        if let Some(ref schema) = updates.schema {
+            ConnectionConfig::validate_schema(schema)
+                .map_err(|e| AppError::Config(e))?;
+        }
+
+        let mut conns = self.connections.write().await;
+        let managed = conns
+            .get_mut(connection_id)
+            .ok_or_else(|| AppError::ConnectionNotFound(connection_id.to_string()))?;
+
+        let mut needs_reconnect = false;
+
+        if let Some(name) = updates.name {
+            managed.config.name = name;
+        }
+        if let Some(host) = updates.host {
+            managed.config.host = host;
+            needs_reconnect = true;
+        }
+        if let Some(port) = updates.port {
+            managed.config.port = port;
+            needs_reconnect = true;
+        }
+        if let Some(database) = updates.database {
+            managed.config.database = database;
+            needs_reconnect = true;
+        }
+        if let Some(schema) = updates.schema {
+            managed.config.schema = schema;
+        }
+        if let Some(username) = updates.username {
+            managed.config.username = username;
+            needs_reconnect = true;
+        }
+        if let Some(password) = updates.password {
+            managed.config.password = password;
+            needs_reconnect = true;
+        }
+        if let Some(ssl_mode) = updates.ssl_mode {
+            managed.config.ssl_mode = ssl_mode;
+            needs_reconnect = true;
+        }
+
+        if needs_reconnect {
+            let new_pool = self.create_pool(&managed.config)?;
+            managed.pool = new_pool;
+            managed.status = ConnectionStatus::Reconnecting;
+        }
+
         Ok(())
     }
 
