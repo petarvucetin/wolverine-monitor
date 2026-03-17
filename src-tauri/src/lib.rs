@@ -1,4 +1,5 @@
 mod config;
+mod connections;
 mod error;
 mod models;
 
