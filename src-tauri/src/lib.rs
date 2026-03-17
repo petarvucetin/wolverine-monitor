@@ -3,6 +3,7 @@ mod config;
 mod connections;
 mod error;
 mod models;
+mod triggers;
 
 use connections::manager::ConnectionManager;
 
@@ -14,10 +15,14 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::default().build())
         .manage(ConnectionManager::new())
         .invoke_handler(tauri::generate_handler![
+            // Connection commands
             commands::connection_cmds::add_connection,
             commands::connection_cmds::remove_connection,
             commands::connection_cmds::test_connection,
             commands::connection_cmds::list_connections,
+            // Trigger commands
+            commands::trigger_cmds::install_triggers,
+            commands::trigger_cmds::uninstall_triggers,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
