@@ -14,6 +14,7 @@
 
   let page = $state(1);
   let pageSize = 25;
+  let messageTypeFilter = $state("");
   let selectedItem = $state<DeadLetter | null>(null);
   let loading = $state(false);
 
@@ -22,10 +23,15 @@
     if (!connId) return;
     loading = true;
     try {
-      await loadDeadLetters(connId, page, pageSize);
+      await loadDeadLetters(connId, page, pageSize, messageTypeFilter || undefined);
     } finally {
       loading = false;
     }
+  }
+
+  function handleFilterChange() {
+    page = 1;
+    load();
   }
 
   function handleSelect(item: DeadLetter) {
@@ -61,6 +67,20 @@
     <p class="text-[var(--color-text-secondary)]">Select a connection to view dead letters.</p>
   {:else}
     <div class="space-y-4">
+      <div class="flex items-center gap-3 p-4 bg-[var(--color-surface-raised)] rounded-lg border border-[var(--color-border)]">
+        <label class="flex items-center gap-2 text-sm flex-1">
+          <span class="text-xs text-[var(--color-text-secondary)]">Message Type</span>
+          <input bind:value={messageTypeFilter} placeholder="Filter by message type..."
+            onchange={handleFilterChange}
+            onkeydown={(e) => { if (e.key === 'Enter') handleFilterChange(); }}
+            class="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
+        </label>
+        <button onclick={handleFilterChange}
+          class="px-3 py-1.5 text-sm rounded border border-[var(--color-border)] hover:bg-[var(--color-surface-overlay)]">
+          Filter
+        </button>
+      </div>
+
       <ReplayControls items={$deadLetterList} />
 
       {#if loading}

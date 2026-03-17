@@ -23,6 +23,7 @@
           <th class="px-4 py-3">Health</th>
           <th class="px-4 py-3">URI</th>
           <th class="px-4 py-3">Version</th>
+          <th class="px-4 py-3">Capabilities</th>
           <th class="px-4 py-3">Started</th>
           <th class="px-4 py-3">Last Check</th>
         </tr>
@@ -44,6 +45,9 @@
             </td>
             <td class="px-4 py-2">
               {node.version ?? "\u2014"}
+            </td>
+            <td class="px-4 py-2 text-xs text-[var(--color-text-secondary)]">
+              {node.capabilities ?? "\u2014"}
             </td>
             <td class="px-4 py-2 text-[var(--color-text-secondary)]">
               {formatRelativeTime(node.started)}
