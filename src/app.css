@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #0f1117;
+  --color-surface-raised: #1a1d27;
+  --color-surface-overlay: #252833;
+  --color-border: #2e3140;
+  --color-text-primary: #e2e4e9;
+  --color-text-secondary: #8b8fa3;
+  --color-status-handled: #22c55e;
+  --color-status-incoming: #3b82f6;
+  --color-status-outgoing: #f97316;
+  --color-status-error: #ef4444;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
