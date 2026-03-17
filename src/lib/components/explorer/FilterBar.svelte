@@ -1,6 +1,6 @@
 <script lang="ts">
   interface Props {
-    onFilter: (filters: { table: string; status: string; messageType: string }) => void;
+    onFilter: (filters: { table: string; status: string; messageType: string; dateFrom: string; dateTo: string }) => void;
   }
 
   let { onFilter }: Props = $props();
@@ -8,9 +8,11 @@
   let table = $state("incoming");
   let status = $state("");
   let messageType = $state("");
+  let dateFrom = $state("");
+  let dateTo = $state("");
 
   function emitFilter() {
-    onFilter({ table, status, messageType });
+    onFilter({ table, status, messageType, dateFrom, dateTo });
   }
 
   $effect(() => {
@@ -18,11 +20,13 @@
     void table;
     void status;
     void messageType;
+    void dateFrom;
+    void dateTo;
     emitFilter();
   });
 </script>
 
-<div class="flex items-center gap-3 p-4 bg-[var(--color-surface-raised)] rounded-lg border border-[var(--color-border)]">
+<div class="flex flex-wrap items-center gap-3 p-4 bg-[var(--color-surface-raised)] rounded-lg border border-[var(--color-border)]">
   <label class="flex items-center gap-2 text-sm">
     <span class="text-xs text-[var(--color-text-secondary)]">Table</span>
     <select bind:value={table}
@@ -50,5 +54,17 @@
     <span class="text-xs text-[var(--color-text-secondary)]">Type</span>
     <input bind:value={messageType} placeholder="Filter by message type..."
       class="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
+  </label>
+
+  <label class="flex items-center gap-2 text-sm">
+    <span class="text-xs text-[var(--color-text-secondary)]">From</span>
+    <input type="datetime-local" bind:value={dateFrom}
+      class="bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
+  </label>
+
+  <label class="flex items-center gap-2 text-sm">
+    <span class="text-xs text-[var(--color-text-secondary)]">To</span>
+    <input type="datetime-local" bind:value={dateTo}
+      class="bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
   </label>
 </div>

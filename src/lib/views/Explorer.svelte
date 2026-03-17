@@ -14,10 +14,12 @@
   let page = $state(1);
   let pageSize = 25;
   let currentTable = $state("incoming");
-  let currentFilters = $state<{ table: string; status: string; messageType: string }>({
+  let currentFilters = $state<{ table: string; status: string; messageType: string; dateFrom: string; dateTo: string }>({
     table: "incoming",
     status: "",
     messageType: "",
+    dateFrom: "",
+    dateTo: "",
   });
   let selectedItem = $state<AnyEnvelope | null>(null);
   let loading = $state(false);
@@ -31,6 +33,8 @@
       const filters = {
         status: currentFilters.status || undefined,
         message_type: currentFilters.messageType || undefined,
+        date_from: currentFilters.dateFrom ? new Date(currentFilters.dateFrom).toISOString() : undefined,
+        date_to: currentFilters.dateTo ? new Date(currentFilters.dateTo).toISOString() : undefined,
       };
 
       if (currentTable === "incoming") {
@@ -53,7 +57,7 @@
     }
   }
 
-  function handleFilter(filters: { table: string; status: string; messageType: string }) {
+  function handleFilter(filters: { table: string; status: string; messageType: string; dateFrom: string; dateTo: string }) {
     currentFilters = filters;
     if (filters.table !== currentTable) {
       currentTable = filters.table;
