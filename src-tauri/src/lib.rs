@@ -31,6 +31,10 @@ pub fn run() {
             commands::dead_letter_cmds::get_dead_letters,
             commands::dead_letter_cmds::replay_dead_letter,
             commands::dead_letter_cmds::replay_dead_letters_bulk,
+            // Node commands
+            commands::node_cmds::get_nodes,
+            // Dashboard commands
+            commands::dashboard_cmds::get_dashboard_stats,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
