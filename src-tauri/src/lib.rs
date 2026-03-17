@@ -3,6 +3,7 @@ mod config;
 mod connections;
 mod error;
 mod models;
+mod queries;
 mod triggers;
 
 use connections::manager::ConnectionManager;
@@ -23,6 +24,13 @@ pub fn run() {
             // Trigger commands
             commands::trigger_cmds::install_triggers,
             commands::trigger_cmds::uninstall_triggers,
+            // Envelope commands
+            commands::envelope_cmds::get_incoming,
+            commands::envelope_cmds::get_outgoing,
+            // Dead letter commands
+            commands::dead_letter_cmds::get_dead_letters,
+            commands::dead_letter_cmds::replay_dead_letter,
+            commands::dead_letter_cmds::replay_dead_letters_bulk,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
