@@ -27,6 +27,9 @@ impl ConnectionManager {
     }
 
     pub async fn add(&self, mut config: ConnectionConfig) -> Result<String, AppError> {
+        ConnectionConfig::validate_schema(&config.schema)
+            .map_err(|e| AppError::Config(e))?;
+
         if config.id.is_empty() {
             config.id = Uuid::new_v4().to_string();
         }

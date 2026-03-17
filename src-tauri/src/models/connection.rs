@@ -27,6 +27,23 @@ pub struct ConnectionConfig {
     pub ssl_mode: SslMode,
 }
 
+impl ConnectionConfig {
+    /// Validate a schema name to prevent SQL injection.
+    /// Only allows alphanumeric characters and underscores.
+    pub fn validate_schema(schema: &str) -> Result<(), String> {
+        if schema.is_empty() {
+            return Err("Schema name cannot be empty".to_string());
+        }
+        if !schema.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            return Err(format!(
+                "Schema name '{}' contains invalid characters. Only alphanumeric and underscores allowed.",
+                schema
+            ));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ConnectionStatus {
     Connected,
@@ -52,4 +69,67 @@ pub struct ConnectionUpdate {
     pub username: Option<String>,
     pub password: Option<String>,
     pub ssl_mode: Option<SslMode>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_schema_accepts_simple_name() {
+        assert!(ConnectionConfig::validate_schema("public").is_ok());
+    }
+
+    #[test]
+    fn validate_schema_accepts_underscores() {
+        assert!(ConnectionConfig::validate_schema("my_schema").is_ok());
+    }
+
+    #[test]
+    fn validate_schema_accepts_alphanumeric() {
+        assert!(ConnectionConfig::validate_schema("schema2").is_ok());
+    }
+
+    #[test]
+    fn validate_schema_accepts_wolverine_default() {
+        assert!(ConnectionConfig::validate_schema("wolverine").is_ok());
+    }
+
+    #[test]
+    fn validate_schema_rejects_empty() {
+        let result = ConnectionConfig::validate_schema("");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("cannot be empty"));
+    }
+
+    #[test]
+    fn validate_schema_rejects_spaces() {
+        let result = ConnectionConfig::validate_schema("my schema");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("invalid characters"));
+    }
+
+    #[test]
+    fn validate_schema_rejects_semicolons() {
+        let result = ConnectionConfig::validate_schema("public; DROP TABLE");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn validate_schema_rejects_quotes() {
+        let result = ConnectionConfig::validate_schema("schema'");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn validate_schema_rejects_dashes() {
+        let result = ConnectionConfig::validate_schema("my-schema");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn validate_schema_rejects_dots() {
+        let result = ConnectionConfig::validate_schema("public.tables");
+        assert!(result.is_err());
+    }
 }
