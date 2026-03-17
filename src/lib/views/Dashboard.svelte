@@ -2,6 +2,7 @@
   import { activeConnectionId } from "$lib/stores/connections";
   import { stats, startDashboard, stopDashboard } from "$lib/stores/dashboard";
   import CounterCard from "$lib/components/dashboard/CounterCard.svelte";
+  import ThroughputChart from "$lib/components/dashboard/ThroughputChart.svelte";
   import LiveFeed from "$lib/components/dashboard/LiveFeed.svelte";
 
   $effect(() => {
@@ -40,6 +41,10 @@
         value={$stats.dead_letter_count}
         color="#ef4444"
       />
+    </div>
+
+    <div class="mb-6">
+      <ThroughputChart data={$stats.throughput} />
     </div>
 
     <LiveFeed />
