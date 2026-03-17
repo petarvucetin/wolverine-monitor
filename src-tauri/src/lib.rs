@@ -3,10 +3,12 @@ mod config;
 mod connections;
 mod error;
 mod models;
+mod monitor;
 mod queries;
 mod triggers;
 
 use connections::manager::ConnectionManager;
+use monitor::listener::NotifyListener;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -15,6 +17,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_log::Builder::default().build())
         .manage(ConnectionManager::new())
+        .manage(NotifyListener::new())
         .invoke_handler(tauri::generate_handler![
             // Connection commands
             commands::connection_cmds::add_connection,

@@ -3,13 +3,21 @@ use tauri::State;
 use crate::connections::manager::ConnectionManager;
 use crate::error::AppError;
 use crate::models::connection::{ConnectionConfig, ConnectionInfo, SslMode};
+use crate::monitor::listener::NotifyListener;
 
 #[tauri::command]
 pub async fn add_connection(
     config: ConnectionConfig,
     manager: State<'_, ConnectionManager>,
+    listener: State<'_, NotifyListener>,
+    app: tauri::AppHandle,
 ) -> Result<String, AppError> {
-    manager.add(config).await
+    let listen_config = config.clone();
+    let id = manager.add(config).await?;
+    let mut listen_config = listen_config;
+    listen_config.id = id.clone();
+    listener.start_listening(app, listen_config).await;
+    Ok(id)
 }
 
 #[tauri::command]
