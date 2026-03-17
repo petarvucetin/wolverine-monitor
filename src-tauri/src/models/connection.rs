@@ -16,8 +16,11 @@ impl Default for SslMode {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectionConfig {
+    #[serde(default)]
     pub id: String,
     pub name: String,
+    #[serde(default)]
+    pub label: String,
     pub host: String,
     pub port: u16,
     pub database: String,
@@ -62,6 +65,7 @@ pub struct ConnectionInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectionUpdate {
     pub name: Option<String>,
+    pub label: Option<String>,
     pub host: Option<String>,
     pub port: Option<u16>,
     pub database: Option<String>,

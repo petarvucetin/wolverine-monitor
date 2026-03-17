@@ -23,9 +23,14 @@
         tabindex="0"
       >
         <div>
-          <div class="text-sm font-medium">{conn.config.name}</div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium">{conn.config.name}</span>
+            {#if conn.config.label}
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-medium uppercase">{conn.config.label}</span>
+            {/if}
+          </div>
           <div class="text-xs text-[var(--color-text-secondary)]">
-            {conn.config.host}:{conn.config.port}/{conn.config.database}
+            {conn.config.host}:{conn.config.port}/{conn.config.database} ({conn.config.schema})
           </div>
         </div>
         <div class="flex items-center gap-3">

@@ -1,6 +1,6 @@
 [package]
 name = "wolverine-monitor"
-version = "0.1.0"
+version = "0.1.4"
 description = "PostgreSQL monitoring dashboard"
 authors = ["you"]
 edition = "2021"
@@ -28,6 +28,8 @@ tauri-plugin-notification = "2"
 tauri-plugin-store = "2"
 tauri-plugin-log = "2"
 base64 = "0.22"
+aes-gcm = "0.10"
+sha2 = "0.10"
 thiserror = "2"
 futures-util = "0.3"
 

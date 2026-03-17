@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 import type { DashboardStats, NotifyEvent } from "$lib/types";
 import { getDashboardStats, onEnvelopeChange } from "$lib/tauri";
+import { statusBar } from "./statusBar";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 
 export interface RecentMessage {
@@ -44,8 +45,14 @@ export function addRecentMessage(event: NotifyEvent): void {
 }
 
 export async function refreshStats(connectionId: string): Promise<void> {
-  const data = await getDashboardStats(connectionId);
-  stats.set(data);
+  try {
+    const data = await getDashboardStats(connectionId);
+    stats.set(data);
+    const total = data.incoming_count + data.outgoing_count + data.dead_letter_count;
+    statusBar.set({ status: "ready", message: `${total} envelopes` });
+  } catch (e) {
+    statusBar.set({ status: "error", message: `${e}` });
+  }
 }
 
 let refreshTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -63,7 +70,7 @@ let unlistenFn: UnlistenFn | null = null;
 export async function startDashboard(connectionId: string): Promise<void> {
   stopDashboard();
 
-  await refreshStats(connectionId);
+  refreshStats(connectionId);
 
   pollInterval = setInterval(() => {
     refreshStats(connectionId);

@@ -31,7 +31,6 @@ pub struct IncomingEnvelope {
     pub message_type: String,
     pub received_at: Option<String>,
     pub keep_until: Option<DateTime<Utc>>,
-    pub timestamp: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,7 +42,6 @@ pub struct OutgoingEnvelope {
     pub body: Vec<u8>,
     pub attempts: i32,
     pub message_type: String,
-    pub timestamp: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Sidebar from "$lib/components/layout/Sidebar.svelte";
+  import StatusBar from "$lib/components/layout/StatusBar.svelte";
   import ToastContainer from "$lib/components/layout/ToastContainer.svelte";
   import Dashboard from "$lib/views/Dashboard.svelte";
   import Explorer from "$lib/views/Explorer.svelte";
@@ -23,13 +24,15 @@
           activeConnectionId.set(conns[0].config.id);
         }
       });
+    }).catch((e) => {
+      toasts.add(`Failed to load connections: ${e}`, "error");
     });
 
     onAlert((event) => {
       toasts.add(event.message, "warning");
     }).then((fn) => {
       unlistenAlert = fn;
-    });
+    }).catch(() => {});
 
     return () => {
       unsubscribe?.();
@@ -38,22 +41,25 @@
   });
 </script>
 
-<div class="flex h-screen overflow-hidden">
-  <Sidebar />
+<div class="flex flex-col h-screen overflow-hidden">
+  <div class="flex flex-1 overflow-hidden">
+    <Sidebar />
 
-  <main class="flex-1 overflow-y-auto">
-    {#if $currentRoute === "dashboard"}
-      <Dashboard />
-    {:else if $currentRoute === "explorer"}
-      <Explorer />
-    {:else if $currentRoute === "deadletters"}
-      <DeadLetters />
-    {:else if $currentRoute === "nodes"}
-      <Nodes />
-    {:else if $currentRoute === "connections"}
-      <Connections />
-    {/if}
-  </main>
+    <main class="flex-1 overflow-y-auto">
+      {#if $currentRoute === "dashboard"}
+        <Dashboard />
+      {:else if $currentRoute === "explorer"}
+        <Explorer />
+      {:else if $currentRoute === "deadletters"}
+        <DeadLetters />
+      {:else if $currentRoute === "nodes"}
+        <Nodes />
+      {:else if $currentRoute === "connections"}
+        <Connections />
+      {/if}
+    </main>
+  </div>
+  <StatusBar />
 </div>
 
 <ToastContainer />

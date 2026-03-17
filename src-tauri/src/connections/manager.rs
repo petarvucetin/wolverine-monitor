@@ -52,6 +52,38 @@ impl ConnectionManager {
         Ok(id)
     }
 
+    /// Register a connection from saved config without testing connectivity.
+    /// Used on startup to restore persisted connections.
+    pub async fn add_saved(&self, mut config: ConnectionConfig) -> Result<String, AppError> {
+        ConnectionConfig::validate_schema(&config.schema)
+            .map_err(|e| AppError::Config(e))?;
+
+        if config.id.is_empty() {
+            config.id = Uuid::new_v4().to_string();
+        }
+        let id = config.id.clone();
+        let pool = self.create_pool(&config)?;
+
+        // Try to connect but don't fail if unreachable
+        let status = match pool.get().await {
+            Ok(client) => {
+                let _ = client.simple_query("SELECT 1").await;
+                ConnectionStatus::Connected
+            }
+            Err(_) => ConnectionStatus::Disconnected,
+        };
+
+        let managed = ManagedConnection {
+            config,
+            pool,
+            status,
+            triggers_installed: false,
+        };
+
+        self.connections.write().await.insert(id.clone(), managed);
+        Ok(id)
+    }
+
     pub async fn remove(&self, connection_id: &str) -> Result<(), AppError> {
         self.connections
             .write()
@@ -77,6 +109,9 @@ impl ConnectionManager {
 
         if let Some(name) = updates.name {
             managed.config.name = name;
+        }
+        if let Some(label) = updates.label {
+            managed.config.label = label;
         }
         if let Some(host) = updates.host {
             managed.config.host = host;

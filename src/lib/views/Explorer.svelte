@@ -1,6 +1,7 @@
 <script lang="ts">
   import { activeConnectionId } from "$lib/stores/connections";
   import { toasts } from "$lib/stores/toasts";
+  import { statusBar } from "$lib/stores/statusBar";
   import { getIncomingEnvelopes, getOutgoingEnvelopes, getDeadLetters } from "$lib/tauri";
   import type { IncomingEnvelope, OutgoingEnvelope, DeadLetter } from "$lib/types";
   import FilterBar from "$lib/components/explorer/FilterBar.svelte";
@@ -23,12 +24,14 @@
   });
   let selectedItem = $state<AnyEnvelope | null>(null);
   let loading = $state(false);
+  let lastConnId = $state<string | null>(null);
 
   async function loadData() {
     const connId = $activeConnectionId;
     if (!connId) return;
 
     loading = true;
+    statusBar.set({ status: "loading", message: "Loading envelopes..." });
     try {
       const filters = {
         status: currentFilters.status || undefined,
@@ -50,8 +53,10 @@
         items = result.items;
         total = result.total;
       }
+      statusBar.set({ status: "ready", message: `${total} envelopes` });
     } catch (e) {
       toasts.add(`Failed to load envelopes: ${e}`, "error");
+      statusBar.set({ status: "error", message: `${e}` });
     } finally {
       loading = false;
     }
@@ -81,7 +86,9 @@
   }
 
   $effect(() => {
-    if ($activeConnectionId) {
+    const connId = $activeConnectionId;
+    if (connId && connId !== lastConnId) {
+      lastConnId = connId;
       page = 1;
       loadData();
     }

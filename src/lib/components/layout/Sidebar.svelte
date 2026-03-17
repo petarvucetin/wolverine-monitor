@@ -1,7 +1,11 @@
 <script lang="ts">
   import { currentRoute, navigate } from "$lib/stores/router";
   import { connections, activeConnectionId } from "$lib/stores/connections";
+  import { getVersion } from "@tauri-apps/api/app";
   import type { Route } from "$lib/types";
+
+  let version = $state("...");
+  getVersion().then((v) => (version = v));
 
   const navItems: { route: Route; label: string; icon: string }[] = [
     { route: "dashboard", label: "Dashboard", icon: "\u25C9" },
@@ -31,7 +35,7 @@
       >
         <option value="">Select connection...</option>
         {#each $connections as conn}
-          <option value={conn.config.id}>{conn.config.name}</option>
+          <option value={conn.config.id}>{conn.config.name}{conn.config.label ? ` [${conn.config.label}]` : ''}</option>
         {/each}
       </select>
     </div>
@@ -53,6 +57,6 @@
   </nav>
 
   <div class="px-4 py-3 text-xs text-[var(--color-text-secondary)] border-t border-[var(--color-border)]">
-    v0.1.0
+    v{version}
   </div>
 </aside>

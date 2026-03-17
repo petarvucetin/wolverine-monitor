@@ -60,7 +60,7 @@ pub async fn query_incoming(
     let offset = (page - 1) * page_size;
     let data_sql = format!(
         "SELECT id, status, owner_id, execution_time, attempts, body, message_type, \
-         received_at, keep_until, timestamp \
+         received_at, keep_until \
          FROM {schema}.wolverine_incoming_envelopes {where_clause} \
          ORDER BY execution_time DESC NULLS LAST \
          LIMIT ${param_idx} OFFSET ${next_idx}",
@@ -90,7 +90,6 @@ pub async fn query_incoming(
                 message_type: row.get("message_type"),
                 received_at: row.get("received_at"),
                 keep_until: row.get("keep_until"),
-                timestamp: row.get("timestamp"),
             }
         })
         .collect();
@@ -151,9 +150,9 @@ pub async fn query_outgoing(
     // Data query
     let offset = (page - 1) * page_size;
     let data_sql = format!(
-        "SELECT id, owner_id, destination, deliver_by, body, attempts, message_type, timestamp \
+        "SELECT id, owner_id, destination, deliver_by, body, attempts, message_type \
          FROM {schema}.wolverine_outgoing_envelopes {where_clause} \
-         ORDER BY timestamp DESC NULLS LAST \
+         ORDER BY deliver_by DESC NULLS LAST \
          LIMIT ${param_idx} OFFSET ${next_idx}",
         param_idx = param_idx,
         next_idx = param_idx + 1,
@@ -177,7 +176,6 @@ pub async fn query_outgoing(
             body: row.get("body"),
             attempts: row.get("attempts"),
             message_type: row.get("message_type"),
-            timestamp: row.get("timestamp"),
         })
         .collect();
 

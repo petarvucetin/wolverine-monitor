@@ -10,7 +10,6 @@ export interface IncomingEnvelope {
   message_type: string;
   received_at: string | null;
   keep_until: string | null;
-  timestamp: string | null;
 }
 
 export interface OutgoingEnvelope {
@@ -21,7 +20,6 @@ export interface OutgoingEnvelope {
   body: number[];
   attempts: number;
   message_type: string;
-  timestamp: string | null;
 }
 
 export interface DeadLetter {
@@ -56,6 +54,7 @@ export type SslMode = "Disable" | "Prefer" | "Require" | "VerifyCa";
 export interface ConnectionConfig {
   id: string;
   name: string;
+  label: string;
   host: string;
   port: number;
   database: string;

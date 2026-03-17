@@ -3,6 +3,7 @@
   import { createConnection, testConnectionConfig } from "$lib/stores/connections";
 
   let name = $state("");
+  let label = $state("");
   let host = $state("localhost");
   let port = $state(5432);
   let database = $state("");
@@ -22,9 +23,9 @@
   async function handleSave() {
     saving = true;
     try {
-      await createConnection({ name, host, port, database, schema, username, password, ssl_mode: sslMode });
+      await createConnection({ name, label, host, port, database, schema, username, password, ssl_mode: sslMode });
       // Reset form
-      name = ""; database = ""; username = ""; password = "";
+      name = ""; label = ""; database = ""; username = ""; password = "";
     } catch { /* toast already shown */ }
     saving = false;
   }
@@ -38,6 +39,11 @@
     <label class="block">
       <span class="text-xs text-[var(--color-text-secondary)]">Name</span>
       <input bind:value={name} required
+        class="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
+    </label>
+    <label class="block">
+      <span class="text-xs text-[var(--color-text-secondary)]">Label</span>
+      <input bind:value={label} placeholder="e.g. queues, wolverine..."
         class="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
     </label>
     <label class="block">
