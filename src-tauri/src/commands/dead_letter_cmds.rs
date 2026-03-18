@@ -16,9 +16,9 @@ pub async fn get_dead_letters(
     manager: State<'_, ConnectionManager>,
 ) -> Result<PaginatedResult<DeadLetter>, AppError> {
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
+    let tp = manager.get_table_prefix(&connection_id).await?;
     let client = pool.get().await?;
-    dead_letters::query_dead_letters(&client, &schema, &filters, page, page_size).await
+    dead_letters::query_dead_letters(&client, &tp, &filters, page, page_size).await
 }
 
 #[tauri::command]
@@ -30,8 +30,8 @@ pub async fn replay_dead_letter(
     let uuid = Uuid::parse_str(&id)
         .map_err(|e| AppError::Config(format!("Invalid UUID: {e}")))?;
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
-    dead_letters::replay_single(&pool, &schema, uuid).await
+    let tp = manager.get_table_prefix(&connection_id).await?;
+    dead_letters::replay_single(&pool, &tp, uuid).await
 }
 
 #[tauri::command]
@@ -45,6 +45,6 @@ pub async fn replay_dead_letters_bulk(
         .map(|s| Uuid::parse_str(s).map_err(|e| AppError::Config(format!("Invalid UUID: {e}"))))
         .collect::<Result<Vec<_>, _>>()?;
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
-    dead_letters::replay_bulk(&pool, &schema, &uuids).await
+    let tp = manager.get_table_prefix(&connection_id).await?;
+    dead_letters::replay_bulk(&pool, &tp, &uuids).await
 }

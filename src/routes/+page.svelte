@@ -7,6 +7,7 @@
   import Explorer from "$lib/views/Explorer.svelte";
   import DeadLetters from "$lib/views/DeadLetters.svelte";
   import Nodes from "$lib/views/Nodes.svelte";
+  import Queues from "$lib/views/Queues.svelte";
   import Connections from "$lib/views/Connections.svelte";
   import { currentRoute, navigate } from "$lib/stores/router";
   import { loadConnections } from "$lib/stores/connections";
@@ -48,6 +49,8 @@
         <DeadLetters />
       {:else if $currentRoute === "nodes"}
         <Nodes />
+      {:else if $currentRoute === "queues"}
+        <Queues />
       {:else if $currentRoute === "connections"}
         <Connections />
       {/if}

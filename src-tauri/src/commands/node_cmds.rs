@@ -11,7 +11,7 @@ pub async fn get_nodes(
     manager: State<'_, ConnectionManager>,
 ) -> Result<Vec<WolverineNode>, AppError> {
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
+    let tp = manager.get_table_prefix(&connection_id).await?;
     let client = pool.get().await?;
-    nodes::query_nodes(&client, &schema).await
+    nodes::query_nodes(&client, &tp).await
 }

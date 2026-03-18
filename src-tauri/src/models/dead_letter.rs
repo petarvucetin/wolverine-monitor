@@ -14,7 +14,6 @@ pub struct DeadLetter {
     pub exception_message: Option<String>,
     pub sent_at: Option<DateTime<Utc>>,
     pub replayable: bool,
-    pub expires: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

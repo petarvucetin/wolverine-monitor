@@ -113,6 +113,9 @@ impl ConnectionManager {
         if let Some(routes) = updates.routes {
             managed.config.routes = routes;
         }
+        if let Some(table_prefix) = updates.table_prefix {
+            managed.config.table_prefix = table_prefix;
+        }
         if let Some(host) = updates.host {
             managed.config.host = host;
             needs_reconnect = true;
@@ -164,6 +167,24 @@ impl ConnectionManager {
             .get(connection_id)
             .ok_or_else(|| AppError::ConnectionNotFound(connection_id.to_string()))?;
         Ok(managed.config.schema.clone())
+    }
+
+    /// Returns the qualified table prefix: "{schema}.{table_prefix}"
+    /// e.g. "wolverine.wolverine_" so callers can do `format!("{tp}incoming_envelopes")`
+    pub async fn get_table_prefix(&self, connection_id: &str) -> Result<String, AppError> {
+        let conns = self.connections.read().await;
+        let managed = conns
+            .get(connection_id)
+            .ok_or_else(|| AppError::ConnectionNotFound(connection_id.to_string()))?;
+        Ok(format!("{}.{}", managed.config.schema, managed.config.table_prefix))
+    }
+
+    pub async fn get_config(&self, connection_id: &str) -> Result<ConnectionConfig, AppError> {
+        let conns = self.connections.read().await;
+        let managed = conns
+            .get(connection_id)
+            .ok_or_else(|| AppError::ConnectionNotFound(connection_id.to_string()))?;
+        Ok(managed.config.clone())
     }
 
     pub async fn list(&self) -> Vec<ConnectionInfo> {

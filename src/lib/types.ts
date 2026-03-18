@@ -33,7 +33,6 @@ export interface DeadLetter {
   exception_message: string | null;
   sent_at: string | null;
   replayable: boolean;
-  expires: string | null;
 }
 
 export interface WolverineNode {
@@ -59,6 +58,7 @@ export interface ConnectionConfig {
   port: number;
   database: string;
   schema: string;
+  table_prefix: string;
   username: string;
   password: string;
   ssl_mode: SslMode;
@@ -121,7 +121,15 @@ export interface NotifyEvent {
   message_type: string;
 }
 
-export type Route = "dashboard" | "explorer" | "deadletters" | "nodes" | "connections";
+export type Route = "dashboard" | "explorer" | "deadletters" | "nodes" | "queues" | "connections";
+
+export interface QueueInfo {
+  name: string;
+  table_name: string;
+  count: number;
+  scheduled_count: number;
+  has_scheduled_table: boolean;
+}
 
 export interface AlertRule {
   id: string;

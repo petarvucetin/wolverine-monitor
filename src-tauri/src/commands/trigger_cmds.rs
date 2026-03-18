@@ -10,9 +10,9 @@ pub async fn install_triggers(
     manager: State<'_, ConnectionManager>,
 ) -> Result<(), AppError> {
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
+    let config = manager.get_config(&connection_id).await?;
     let client = pool.get().await?;
-    TriggerInstaller::install(&client, &schema).await?;
+    TriggerInstaller::install(&client, &config.schema, &config.table_prefix).await?;
     manager.set_triggers_installed(&connection_id, true).await;
     Ok(())
 }
@@ -23,9 +23,9 @@ pub async fn uninstall_triggers(
     manager: State<'_, ConnectionManager>,
 ) -> Result<(), AppError> {
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
+    let config = manager.get_config(&connection_id).await?;
     let client = pool.get().await?;
-    TriggerInstaller::uninstall(&client, &schema).await?;
+    TriggerInstaller::uninstall(&client, &config.schema, &config.table_prefix).await?;
     manager.set_triggers_installed(&connection_id, false).await;
     Ok(())
 }

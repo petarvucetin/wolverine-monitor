@@ -12,6 +12,7 @@
     { route: "explorer", label: "Explorer", icon: "\u229E" },
     { route: "deadletters", label: "Dead Letters", icon: "\u26A0" },
     { route: "nodes", label: "Nodes", icon: "\u2B21" },
+    { route: "queues", label: "Queues", icon: "\u2261" },
     { route: "connections", label: "Connections", icon: "\u26C1" },
   ];
 

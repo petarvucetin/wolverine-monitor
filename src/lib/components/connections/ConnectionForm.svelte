@@ -7,6 +7,7 @@
   let port = $state(5432);
   let database = $state("");
   let schema = $state("public");
+  let tablePrefix = $state("wolverine_");
   let username = $state("");
   let password = $state("");
   let sslMode = $state<SslMode>("Prefer");
@@ -18,6 +19,7 @@
     explorer: false,
     deadletters: false,
     nodes: false,
+    queues: false,
   });
 
   const routeLabels: { route: Route; label: string }[] = [
@@ -25,6 +27,7 @@
     { route: "explorer", label: "Explorer" },
     { route: "deadletters", label: "Dead Letters" },
     { route: "nodes", label: "Nodes" },
+    { route: "queues", label: "Queues" },
   ];
 
   function getRoutes(): Route[] {
@@ -42,7 +45,7 @@
   async function handleSave() {
     saving = true;
     try {
-      await createConnection({ name, routes: getRoutes(), host, port, database, schema, username, password, ssl_mode: sslMode });
+      await createConnection({ name, routes: getRoutes(), host, port, database, schema, table_prefix: tablePrefix, username, password, ssl_mode: sslMode });
       name = ""; database = ""; username = ""; password = "";
       selectedRoutes = { dashboard: false, explorer: false, deadletters: false, nodes: false };
     } catch { /* toast already shown */ }
@@ -78,6 +81,11 @@
     <label class="block">
       <span class="text-xs text-[var(--color-text-secondary)]">Schema</span>
       <input bind:value={schema} required
+        class="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
+    </label>
+    <label class="block">
+      <span class="text-xs text-[var(--color-text-secondary)]">Table Prefix</span>
+      <input bind:value={tablePrefix} placeholder="wolverine_"
         class="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-3 py-1.5 text-sm" />
     </label>
     <label class="block">

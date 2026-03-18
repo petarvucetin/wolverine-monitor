@@ -41,6 +41,9 @@ pub fn run() {
             commands::dead_letter_cmds::replay_dead_letters_bulk,
             // Node commands
             commands::node_cmds::get_nodes,
+            // Queue commands
+            commands::queue_cmds::get_queues,
+            commands::queue_cmds::get_queue_messages,
             // Dashboard commands
             commands::dashboard_cmds::get_dashboard_stats,
         ])

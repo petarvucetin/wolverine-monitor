@@ -67,6 +67,18 @@ export const replayDeadLettersBulk = (connectionId: string, ids: string[]) =>
 export const getNodes = (connectionId: string) =>
   invoke<WolverineNode[]>("get_nodes", { connectionId });
 
+// Queue commands
+export const getQueues = (connectionId: string) =>
+  invoke<import("./types").QueueInfo[]>("get_queues", { connectionId });
+
+export const getQueueMessages = (
+  connectionId: string, queueName: string, scheduled: boolean,
+  page: number, pageSize: number
+) =>
+  invoke<import("./types").PaginatedResult<Record<string, unknown>>>("get_queue_messages", {
+    connectionId, queueName, scheduled, page, pageSize,
+  });
+
 // Dashboard commands
 export const getDashboardStats = (connectionId: string) =>
   invoke<DashboardStats>("get_dashboard_stats", { connectionId });

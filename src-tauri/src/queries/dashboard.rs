@@ -6,12 +6,12 @@ use crate::models::dashboard::DashboardStats;
 /// Query aggregate counts for the dashboard.
 pub async fn query_stats(
     client: &Object,
-    schema: &str,
+    tp: &str,
 ) -> Result<DashboardStats, AppError> {
     // Incoming envelope counts grouped by status
     let incoming_sql = format!(
         "SELECT status, COUNT(*) as cnt \
-         FROM {schema}.wolverine_incoming_envelopes \
+         FROM {tp}incoming_envelopes \
          GROUP BY status"
     );
     let incoming_rows = client.query(&incoming_sql, &[]).await?;
@@ -33,14 +33,14 @@ pub async fn query_stats(
 
     // Outgoing count
     let outgoing_sql = format!(
-        "SELECT COUNT(*) FROM {schema}.wolverine_outgoing_envelopes"
+        "SELECT COUNT(*) FROM {tp}outgoing_envelopes"
     );
     let outgoing_row = client.query_one(&outgoing_sql, &[]).await?;
     let outgoing_count: i64 = outgoing_row.get(0);
 
     // Dead letter count
     let dead_letter_sql = format!(
-        "SELECT COUNT(*) FROM {schema}.wolverine_dead_letters"
+        "SELECT COUNT(*) FROM {tp}dead_letters"
     );
     let dead_letter_row = client.query_one(&dead_letter_sql, &[]).await?;
     let dead_letter_count: i64 = dead_letter_row.get(0);

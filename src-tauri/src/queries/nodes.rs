@@ -6,11 +6,11 @@ use crate::models::node::WolverineNode;
 /// Query all Wolverine nodes, ordered by node_number.
 pub async fn query_nodes(
     client: &Object,
-    schema: &str,
+    tp: &str,
 ) -> Result<Vec<WolverineNode>, AppError> {
     let sql = format!(
-        "SELECT id, node_number, description, uri, started, health_check, version, capabilities \
-         FROM {schema}.wolverine_nodes ORDER BY node_number"
+        "SELECT id, node_number, description, uri, started, health_check, version, capabilities::text \
+         FROM {tp}nodes ORDER BY node_number"
     );
 
     let rows = client.query(&sql, &[]).await?;

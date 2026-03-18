@@ -14,6 +14,10 @@ impl Default for SslMode {
     }
 }
 
+fn default_table_prefix() -> String {
+    "wolverine_".to_string()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectionConfig {
     #[serde(default)]
@@ -25,12 +29,19 @@ pub struct ConnectionConfig {
     pub port: u16,
     pub database: String,
     pub schema: String,
+    #[serde(default = "default_table_prefix")]
+    pub table_prefix: String,
     pub username: String,
     pub password: String,
     pub ssl_mode: SslMode,
 }
 
 impl ConnectionConfig {
+    /// Returns the fully-qualified table name: {schema}.{prefix}{base}
+    pub fn table(&self, base: &str) -> String {
+        format!("{}.{}{}", self.schema, self.table_prefix, base)
+    }
+
     /// Validate a schema name to prevent SQL injection.
     /// Only allows alphanumeric characters and underscores.
     pub fn validate_schema(schema: &str) -> Result<(), String> {
@@ -70,6 +81,7 @@ pub struct ConnectionUpdate {
     pub port: Option<u16>,
     pub database: Option<String>,
     pub schema: Option<String>,
+    pub table_prefix: Option<String>,
     pub username: Option<String>,
     pub password: Option<String>,
     pub ssl_mode: Option<SslMode>,

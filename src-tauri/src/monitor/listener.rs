@@ -25,6 +25,7 @@ impl NotifyListener {
     pub async fn start_listening(&self, app: AppHandle, config: ConnectionConfig) {
         let connection_id = config.id.clone();
         let schema = config.schema.clone();
+        let table_prefix = config.table_prefix.clone();
         let conn_string = build_connection_string(&config);
         let app_clone = app.clone();
 
@@ -47,9 +48,9 @@ impl NotifyListener {
 
                         // Subscribe to channels
                         let channels = vec![
-                            format!("{}_wolverine_incoming_envelopes_changed", schema),
-                            format!("{}_wolverine_outgoing_envelopes_changed", schema),
-                            format!("{}_wolverine_dead_letters_changed", schema),
+                            format!("{}_{table_prefix}incoming_envelopes_changed", schema),
+                            format!("{}_{table_prefix}outgoing_envelopes_changed", schema),
+                            format!("{}_{table_prefix}dead_letters_changed", schema),
                         ];
 
                         let mut listen_failed = false;
@@ -85,7 +86,7 @@ impl NotifyListener {
                                     let payload_str = notification.payload();
 
                                     if let Some(payload) = NotifyPayload::parse(payload_str) {
-                                        let table = table_from_channel(channel, &schema);
+                                        let table = table_from_channel(channel, &schema, &table_prefix);
 
                                         let event_data = serde_json::json!({
                                             "connection_id": connection_id,
@@ -181,8 +182,8 @@ fn build_connection_string(config: &ConnectionConfig) -> String {
     )
 }
 
-fn table_from_channel(channel: &str, schema: &str) -> &'static str {
-    let prefix = format!("{}_wolverine_", schema);
+fn table_from_channel(channel: &str, schema: &str, table_prefix: &str) -> &'static str {
+    let prefix = format!("{}_{}", schema, table_prefix);
     let suffix = channel.strip_prefix(&prefix).unwrap_or(channel);
     match suffix {
         "incoming_envelopes_changed" => "incoming",

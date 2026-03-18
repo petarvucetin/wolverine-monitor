@@ -8,7 +8,7 @@ use crate::models::envelope::{
 /// Query incoming envelopes with optional filters and pagination.
 pub async fn query_incoming(
     client: &Object,
-    schema: &str,
+    tp: &str,
     filters: &EnvelopeFilters,
     page: i64,
     page_size: i64,
@@ -49,7 +49,7 @@ pub async fn query_incoming(
 
     // Count query
     let count_sql = format!(
-        "SELECT COUNT(*) FROM {schema}.wolverine_incoming_envelopes {where_clause}"
+        "SELECT COUNT(*) FROM {tp}incoming_envelopes {where_clause}"
     );
     let param_refs: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> =
         params.iter().map(|p| p.as_ref() as &(dyn tokio_postgres::types::ToSql + Sync)).collect();
@@ -61,7 +61,7 @@ pub async fn query_incoming(
     let data_sql = format!(
         "SELECT id, status, owner_id, execution_time, attempts, body, message_type, \
          received_at, keep_until \
-         FROM {schema}.wolverine_incoming_envelopes {where_clause} \
+         FROM {tp}incoming_envelopes {where_clause} \
          ORDER BY execution_time DESC NULLS LAST \
          LIMIT ${param_idx} OFFSET ${next_idx}",
         param_idx = param_idx,
@@ -105,7 +105,7 @@ pub async fn query_incoming(
 /// Query outgoing envelopes with optional filters and pagination.
 pub async fn query_outgoing(
     client: &Object,
-    schema: &str,
+    tp: &str,
     filters: &EnvelopeFilters,
     page: i64,
     page_size: i64,
@@ -140,7 +140,7 @@ pub async fn query_outgoing(
 
     // Count query
     let count_sql = format!(
-        "SELECT COUNT(*) FROM {schema}.wolverine_outgoing_envelopes {where_clause}"
+        "SELECT COUNT(*) FROM {tp}outgoing_envelopes {where_clause}"
     );
     let param_refs: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> =
         params.iter().map(|p| p.as_ref() as &(dyn tokio_postgres::types::ToSql + Sync)).collect();
@@ -151,7 +151,7 @@ pub async fn query_outgoing(
     let offset = (page - 1) * page_size;
     let data_sql = format!(
         "SELECT id, owner_id, destination, deliver_by, body, attempts, message_type \
-         FROM {schema}.wolverine_outgoing_envelopes {where_clause} \
+         FROM {tp}outgoing_envelopes {where_clause} \
          ORDER BY deliver_by DESC NULLS LAST \
          LIMIT ${param_idx} OFFSET ${next_idx}",
         param_idx = param_idx,

@@ -1,6 +1,6 @@
 [package]
 name = "wolverine-monitor"
-version = "0.1.5"
+version = "0.1.7"
 description = "PostgreSQL monitoring dashboard"
 authors = ["you"]
 edition = "2021"

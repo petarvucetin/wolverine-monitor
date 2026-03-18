@@ -8,7 +8,7 @@ use crate::models::envelope::{EnvelopeFilters, PaginatedResult};
 /// Query dead letters with optional filters and pagination.
 pub async fn query_dead_letters(
     client: &Object,
-    schema: &str,
+    tp: &str,
     filters: &EnvelopeFilters,
     page: i64,
     page_size: i64,
@@ -43,7 +43,7 @@ pub async fn query_dead_letters(
 
     // Count query
     let count_sql = format!(
-        "SELECT COUNT(*) FROM {schema}.wolverine_dead_letters {where_clause}"
+        "SELECT COUNT(*) FROM {tp}dead_letters {where_clause}"
     );
     let param_refs: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> =
         params.iter().map(|p| p.as_ref() as &(dyn tokio_postgres::types::ToSql + Sync)).collect();
@@ -54,8 +54,8 @@ pub async fn query_dead_letters(
     let offset = (page - 1) * page_size;
     let data_sql = format!(
         "SELECT id, execution_time, body, message_type, received_at, source, \
-         exception_type, exception_message, sent_at, replayable, expires \
-         FROM {schema}.wolverine_dead_letters {where_clause} \
+         exception_type, exception_message, sent_at, replayable \
+         FROM {tp}dead_letters {where_clause} \
          ORDER BY sent_at DESC NULLS LAST \
          LIMIT ${param_idx} OFFSET ${next_idx}",
         param_idx = param_idx,
@@ -83,7 +83,6 @@ pub async fn query_dead_letters(
             exception_message: row.get("exception_message"),
             sent_at: row.get("sent_at"),
             replayable: row.get("replayable"),
-            expires: row.get("expires"),
         })
         .collect();
 
@@ -99,7 +98,7 @@ pub async fn query_dead_letters(
 /// Takes a Pool so it can obtain a mutable client for the transaction.
 pub async fn replay_single(
     pool: &Pool,
-    schema: &str,
+    tp: &str,
     id: Uuid,
 ) -> Result<ReplayResult, AppError> {
     let mut client = pool.get().await?;
@@ -115,7 +114,7 @@ pub async fn replay_single(
         .query_opt(
             &format!(
                 "SELECT id, body, message_type, received_at, replayable \
-                 FROM {schema}.wolverine_dead_letters WHERE id = $1"
+                 FROM {tp}dead_letters WHERE id = $1"
             ),
             &[&id],
         )
@@ -143,7 +142,7 @@ pub async fn replay_single(
     // Insert into incoming envelopes with status='Incoming', owner_id=0, attempts=0
     tx.execute(
         &format!(
-            "INSERT INTO {schema}.wolverine_incoming_envelopes \
+            "INSERT INTO {tp}incoming_envelopes \
              (id, status, owner_id, attempts, body, message_type, received_at) \
              VALUES ($1, 'Incoming', 0, 0, $2, $3, $4)"
         ),
@@ -153,7 +152,7 @@ pub async fn replay_single(
 
     // Delete from dead letters
     tx.execute(
-        &format!("DELETE FROM {schema}.wolverine_dead_letters WHERE id = $1"),
+        &format!("DELETE FROM {tp}dead_letters WHERE id = $1"),
         &[&id],
     )
     .await?;
@@ -169,7 +168,7 @@ pub async fn replay_single(
 /// Replay multiple dead letters, collecting per-message results.
 pub async fn replay_bulk(
     pool: &Pool,
-    schema: &str,
+    tp: &str,
     ids: &[Uuid],
 ) -> Result<BulkReplayResult, AppError> {
     let mut succeeded = 0usize;
@@ -177,7 +176,7 @@ pub async fn replay_bulk(
     let mut errors: Vec<ReplayError> = Vec::new();
 
     for &id in ids {
-        match replay_single(pool, schema, id).await {
+        match replay_single(pool, tp, id).await {
             Ok(result) if result.success => {
                 succeeded += 1;
             }

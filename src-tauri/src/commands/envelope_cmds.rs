@@ -4,7 +4,6 @@ use uuid::Uuid;
 
 use crate::connections::manager::ConnectionManager;
 use crate::error::AppError;
-use crate::models::connection::ConnectionConfig;
 use crate::models::envelope::{EnvelopeFilters, IncomingEnvelope, OutgoingEnvelope, PaginatedResult};
 use crate::queries::envelopes;
 
@@ -17,9 +16,9 @@ pub async fn get_incoming_envelopes(
     manager: State<'_, ConnectionManager>,
 ) -> Result<PaginatedResult<IncomingEnvelope>, AppError> {
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
+    let tp = manager.get_table_prefix(&connection_id).await?;
     let client = pool.get().await?;
-    envelopes::query_incoming(&client, &schema, &filters, page, page_size).await
+    envelopes::query_incoming(&client, &tp, &filters, page, page_size).await
 }
 
 #[tauri::command]
@@ -31,9 +30,9 @@ pub async fn get_outgoing_envelopes(
     manager: State<'_, ConnectionManager>,
 ) -> Result<PaginatedResult<OutgoingEnvelope>, AppError> {
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
+    let tp = manager.get_table_prefix(&connection_id).await?;
     let client = pool.get().await?;
-    envelopes::query_outgoing(&client, &schema, &filters, page, page_size).await
+    envelopes::query_outgoing(&client, &tp, &filters, page, page_size).await
 }
 
 #[tauri::command]
@@ -44,22 +43,17 @@ pub async fn get_message_detail(
     manager: State<'_, ConnectionManager>,
 ) -> Result<serde_json::Value, AppError> {
     let pool = manager.get_pool(&connection_id).await?;
-    let schema = manager.get_schema(&connection_id).await?;
+    let tp = manager.get_table_prefix(&connection_id).await?;
 
-    // Validate schema
-    ConnectionConfig::validate_schema(&schema)
-        .map_err(|e| AppError::Config(e))?;
-
-    // Map table name to actual table
     let table_name = match table.as_str() {
-        "incoming" => "wolverine_incoming_envelopes",
-        "outgoing" => "wolverine_outgoing_envelopes",
-        "dead_letter" => "wolverine_dead_letters",
+        "incoming" => format!("{tp}incoming_envelopes"),
+        "outgoing" => format!("{tp}outgoing_envelopes"),
+        "dead_letter" => format!("{tp}dead_letters"),
         _ => return Err(AppError::Config(format!("Unknown table: {table}"))),
     };
 
     let client = pool.get().await?;
-    let sql = format!("SELECT * FROM {schema}.{table_name} WHERE id = $1");
+    let sql = format!("SELECT * FROM {table_name} WHERE id = $1");
 
     let uuid = Uuid::parse_str(&id)
         .map_err(|e| AppError::Config(format!("Invalid UUID: {e}")))?;
@@ -67,7 +61,6 @@ pub async fn get_message_detail(
     let row = client.query_opt(&sql, &[&uuid]).await?;
     let row = row.ok_or_else(|| AppError::Config(format!("Row not found: {id}")))?;
 
-    // Convert row to JSON using column type inspection
     let mut map = serde_json::Map::new();
     for (i, col) in row.columns().iter().enumerate() {
         let name = col.name().to_string();
@@ -104,7 +97,6 @@ pub async fn get_message_detail(
                 let v: Option<Vec<u8>> = row.get(i);
                 match v {
                     Some(bytes) => {
-                        // Try to decode as JSON first, fall back to base64
                         match serde_json::from_slice::<serde_json::Value>(&bytes) {
                             Ok(json) => json,
                             Err(_) => {
@@ -118,7 +110,6 @@ pub async fn get_message_detail(
                 }
             }
             _ => {
-                // Default: try as string, fall back to null
                 let v: Option<String> = row.try_get(i).ok().flatten();
                 match v {
                     Some(s) => serde_json::Value::String(s),
