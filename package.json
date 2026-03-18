@@ -1,6 +1,6 @@
 {
   "name": "wolverine-monitor",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "description": "PostgreSQL monitoring dashboard",
   "type": "module",
   "scripts": {
