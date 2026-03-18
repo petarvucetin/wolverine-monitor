@@ -1,6 +1,13 @@
 <script lang="ts">
   import { statusBar } from "$lib/stores/statusBar";
-  import { connections, activeConnection } from "$lib/stores/connections";
+  import { connections } from "$lib/stores/connections";
+  import { getVersion } from "@tauri-apps/api/app";
+
+  let appVersion = $state("");
+
+  $effect(() => {
+    getVersion().then((v) => { appVersion = v; });
+  });
 
   function statusColor(s: string): string {
     switch (s) {
@@ -20,12 +27,10 @@
 
   <div class="flex-1"></div>
 
-  {#if $activeConnection}
-    <span>{$activeConnection.config.name}</span>
-    <span class="opacity-50">|</span>
-    <span>{$activeConnection.config.schema}</span>
-  {/if}
-
-  <span class="opacity-50">|</span>
   <span>{$connections.length} connection{$connections.length !== 1 ? 's' : ''}</span>
+
+  {#if appVersion}
+    <span class="opacity-50">|</span>
+    <span>v{appVersion}</span>
+  {/if}
 </div>
