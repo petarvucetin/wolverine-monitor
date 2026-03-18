@@ -169,3 +169,72 @@ pub async fn query_queue_messages(
         page_size,
     })
 }
+
+/// Purge (delete all messages from) a single queue.
+pub async fn purge_queue(
+    client: &Object,
+    schema: &str,
+    table_prefix: &str,
+    queue_name: &str,
+) -> Result<i64, AppError> {
+    if !queue_name.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        return Err(AppError::Config(format!(
+            "Queue name '{}' contains invalid characters",
+            queue_name
+        )));
+    }
+
+    let mut deleted: i64 = 0;
+
+    let table = format!("{schema}.{table_prefix}queue_{queue_name}");
+    let result = client.execute(&format!("DELETE FROM {table}"), &[]).await?;
+    deleted += result as i64;
+
+    let scheduled_table = format!("{table}_scheduled");
+    // Check if the scheduled table exists before trying to delete from it
+    let exists: bool = client
+        .query_one(
+            "SELECT EXISTS(SELECT 1 FROM information_schema.tables \
+             WHERE table_schema = $1 AND table_name = $2)",
+            &[&schema, &format!("{table_prefix}queue_{queue_name}_scheduled")],
+        )
+        .await?
+        .get(0);
+
+    if exists {
+        let result = client
+            .execute(&format!("DELETE FROM {scheduled_table}"), &[])
+            .await?;
+        deleted += result as i64;
+    }
+
+    Ok(deleted)
+}
+
+/// Purge all queues (delete all messages from every queue table).
+pub async fn purge_all_queues(
+    client: &Object,
+    schema: &str,
+    table_prefix: &str,
+) -> Result<i64, AppError> {
+    let pattern = format!("{table_prefix}queue_%");
+    let rows = client
+        .query(
+            "SELECT table_name FROM information_schema.tables \
+             WHERE table_schema = $1 AND table_name LIKE $2 AND table_type = 'BASE TABLE' \
+             ORDER BY table_name",
+            &[&schema, &pattern],
+        )
+        .await?;
+
+    let mut deleted: i64 = 0;
+    for row in &rows {
+        let table_name: String = row.get(0);
+        let result = client
+            .execute(&format!("DELETE FROM {schema}.{table_name}"), &[])
+            .await?;
+        deleted += result as i64;
+    }
+
+    Ok(deleted)
+}

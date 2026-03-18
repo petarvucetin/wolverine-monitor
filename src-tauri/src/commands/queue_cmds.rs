@@ -40,3 +40,26 @@ pub async fn get_queue_messages(
     )
     .await
 }
+
+#[tauri::command]
+pub async fn purge_queue(
+    connection_id: String,
+    queue_name: String,
+    manager: State<'_, ConnectionManager>,
+) -> Result<i64, AppError> {
+    let pool = manager.get_pool(&connection_id).await?;
+    let config = manager.get_config(&connection_id).await?;
+    let client = pool.get().await?;
+    queues::purge_queue(&client, &config.schema, &config.table_prefix, &queue_name).await
+}
+
+#[tauri::command]
+pub async fn purge_all_queues(
+    connection_id: String,
+    manager: State<'_, ConnectionManager>,
+) -> Result<i64, AppError> {
+    let pool = manager.get_pool(&connection_id).await?;
+    let config = manager.get_config(&connection_id).await?;
+    let client = pool.get().await?;
+    queues::purge_all_queues(&client, &config.schema, &config.table_prefix).await
+}

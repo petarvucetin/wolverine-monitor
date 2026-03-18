@@ -1,7 +1,8 @@
 import { writable } from "svelte/store";
 import type { QueueInfo } from "$lib/types";
-import { getQueues } from "$lib/tauri";
+import { getQueues, purgeQueue as purgeQueueApi, purgeAllQueues as purgeAllQueuesApi } from "$lib/tauri";
 import { statusBar } from "./statusBar";
+import { toasts } from "./toasts";
 
 export const queueList = writable<QueueInfo[]>([]);
 
@@ -30,5 +31,25 @@ export function stopQueuePolling(): void {
   if (pollInterval !== null) {
     clearInterval(pollInterval);
     pollInterval = null;
+  }
+}
+
+export async function purgeQueue(connectionId: string, queueName: string): Promise<void> {
+  try {
+    const deleted = await purgeQueueApi(connectionId, queueName);
+    toasts.add(`Purged ${deleted} messages from ${queueName}`, "success");
+    await refreshQueues(connectionId);
+  } catch (e) {
+    toasts.add(`Failed to purge queue: ${e}`, "error");
+  }
+}
+
+export async function purgeAllQueues(connectionId: string): Promise<void> {
+  try {
+    const deleted = await purgeAllQueuesApi(connectionId);
+    toasts.add(`Purged ${deleted} messages from all queues`, "success");
+    await refreshQueues(connectionId);
+  } catch (e) {
+    toasts.add(`Failed to purge queues: ${e}`, "error");
   }
 }
